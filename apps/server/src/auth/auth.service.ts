@@ -17,7 +17,7 @@ function toPublicUser(user: User): PublicUser {
   return { id: user.id, name: user.name, email: user.email };
 };
 
-async function register(email: string, password: string, name: string): Promise<PublicUser> {
+export async function register(email: string, password: string, name: string): Promise<PublicUser> {
   const exists = await userRepository.getUserByEmail(email);
 
   if (exists) throw new Error('Почта уже используется другим пользователем');
@@ -28,7 +28,7 @@ async function register(email: string, password: string, name: string): Promise<
   return toPublicUser(user);
 }
 
-async function login(email: string, password: string): Promise<TokenResponse> {
+export async function login(email: string, password: string): Promise<TokenResponse> {
   const user = await userRepository.getUserByEmail(email);
   if (!user) throw new Error("Данные пользователя не найдены");
 
