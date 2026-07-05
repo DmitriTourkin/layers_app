@@ -30,7 +30,8 @@ export async function createUser(email: string, passwordHash: string, name: stri
     const result = await pool.query(`
       INSERT INTO users (email, password_hash, name)
       VALUES ($1, $2, $3)
-      RETURNING id, email, password_hash AS "passwordHash", name, created_at AS "createAt"`, [email, passwordHash, name]
+      RETURNING id, email, password_hash AS "passwordHash", name, created_at AS "createAt"`, 
+      [email, passwordHash, name]
     );
     return result.rows[0];
 }
