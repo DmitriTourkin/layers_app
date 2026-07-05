@@ -1,11 +1,20 @@
 import { Router, Request, Response } from 'express';
 import * as authService from "./auth.service";
 import * as userRepository from './user.repository';
+import { requireAuth, AuthedRequest } from './auth.middleware';
 
 export const authRouter = Router();
 
 authRouter.post('/login', loginHandler);
 authRouter.post('/register', registerHandler);
+authRouter.get('/me', requireAuth, getCurrentUser);
+
+async function getCurrentUser(req: AuthedRequest, res: Response) {
+  const user = await userRepository.getUserById(req.user!.userId);
+
+  if (!user) return res.status(404).json({ error: 'Not found'});
+  res.json({ id: user.id, email: user.email, name: user.name});
+}
 
 async function loginHandler(req: Request, res: Response) {
   const { email, password} = req.body;
@@ -29,8 +38,8 @@ async function registerHandler(req: Request, res: Response) {
     res.status(201).json(user);
   } catch (e) {
     if (e instanceof Error && e.message === "Почта уже используется другим пользователем") {
-      res.status(409).json({error: "Почта занята"})
+      return res.status(409).json({error: "Почта занята"});
     }
-    res.status(500).json({error: "Ошибка сервера"});
+    return res.status(500).json({error: "Ошибка сервера"});
   }
 }

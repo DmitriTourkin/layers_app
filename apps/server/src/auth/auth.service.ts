@@ -32,7 +32,7 @@ export async function login(email: string, password: string): Promise<TokenRespo
   const user = await userRepository.getUserByEmail(email);
   if (!user) throw new Error("Данные пользователя не найдены");
 
-  const isMatchingPassword = bcrypt.compare(password, user.passwordHash);
+  const isMatchingPassword = await bcrypt.compare(password, user.passwordHash);
   if (!isMatchingPassword) throw new Error("Пароль неверен");
 
   const token = jwt.sign({ userId: user.id}, JWT_SECRET, { expiresIn: '1h' });
