@@ -8,12 +8,13 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 type PublicUser = Pick<User, 'id' | 'name' | 'email'>;
 
+interface TokenResponse {
+  token: string;
+  user: PublicUser;
+}
+
 function toPublicUser(user: User): PublicUser {
-  return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-  };
+  return { id: user.id, name: user.name, email: user.email };
 };
 
 async function register(email: string, password: string, name: string): Promise<PublicUser> {
@@ -27,7 +28,7 @@ async function register(email: string, password: string, name: string): Promise<
   return toPublicUser(user);
 }
 
-async function login(email: string, password: string): Promise<{token: string, user: PublicUser}> {
+async function login(email: string, password: string): Promise<TokenResponse> {
   const user = await userRepository.getUserByEmail(email);
   if (!user) throw new Error("Данные пользователя не найдены");
 
