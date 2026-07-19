@@ -1,5 +1,5 @@
-import Router from 'express';
-import { Request, Response } from 'express';
+import { Router } from 'express';
+import { Response } from 'express';
 import * as projectService from './project.service';
 import { AuthedRequest, requireAuth } from '../auth/auth.middleware';
 

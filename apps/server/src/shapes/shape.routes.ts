@@ -1,7 +1,6 @@
 import { Router, Response } from 'express';
 import * as shapeService from './shape.service';
 import { requireAuth, AuthedRequest } from '../auth/auth.middleware';
-import { hkdf } from 'node:crypto';
 
 export const shapeRouter = Router();
 
@@ -24,7 +23,7 @@ async function addShapeHandler(req: AuthedRequest<{ projectId: string }>, res: R
   try {
     const { projectId } = req.params;
     const { userId } = req.user!;
-    const { input } = req.body;
+    const input = req.body;
 
     const shape = await shapeService.addShape(projectId, userId, input)
     res.status(201).json(shape);

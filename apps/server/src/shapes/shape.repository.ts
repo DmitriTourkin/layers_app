@@ -1,7 +1,7 @@
 import { pool } from "../db/client";
 import type { Shape, ShapeInput } from "shared";
 
-const SELECT_FIELDS = `id, project_id AS projectId, created_by AS "createdBy", 
+const SELECT_FIELDS = `id, project_id AS "projectId", created_by AS "createdBy", 
 type, x, y, width, height, rotation, fill, z_index as "zIndex", properties`;
 
 

@@ -7,6 +7,7 @@ import { projectRouter } from "./projects/project.routes";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger";
+import { shapeRouter } from "./shapes/shape.routes";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/auth", authRouter);
 app.use("/projects", projectRouter);
+app.use(shapeRouter)
 
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
