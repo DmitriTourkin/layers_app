@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response, NextFunction} from "express";
+import { ParamsDictionary} from 'express-serve-static-core';
 import { verifyToken } from "./auth.service";
 
-export interface AuthedRequest extends Request {
+export interface AuthedRequest<P = ParamsDictionary> extends Request<P> {
   user?: { userId: string};
 }
 
