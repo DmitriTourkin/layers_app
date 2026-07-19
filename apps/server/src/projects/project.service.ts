@@ -34,3 +34,11 @@ export async function getProjectById(id: string): Promise<Project> {
  
   return project;
 }
+
+export async function assertProjectOwner(projectId: string, userId: string): Promise<void> {
+  const project = await projectRepository.getProjectById(projectId);
+
+  if (!project) throw new Error('NOT_FOUND');
+  
+  if (project.ownerId !== userId) throw new Error("FORBIDDEN");
+}
