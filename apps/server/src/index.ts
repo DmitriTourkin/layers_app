@@ -3,6 +3,7 @@ import { createServer } from "http";
 import { WebSocketServer } from "ws";
 import dotenv from "dotenv";
 import { authRouter } from "./auth/auth.routes";
+import { projectRouter } from "./projects/project.routes";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger";
@@ -15,6 +16,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/auth", authRouter);
+app.use("/projects", projectRouter);
 
 const server = createServer(app);
 const wss = new WebSocketServer({ server });

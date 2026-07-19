@@ -1,6 +1,5 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 import * as userRepository from './user.repository';
 import type { User } from "./user.repository";
 

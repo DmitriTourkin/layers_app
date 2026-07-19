@@ -1,4 +1,5 @@
-import { Router, Request, Response } from 'express';
+import { Request, Response } from 'express';
+import Router from 'express';
 import * as authService from "./auth.service";
 import * as userRepository from './user.repository';
 import { requireAuth, AuthedRequest } from './auth.middleware';
