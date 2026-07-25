@@ -13,7 +13,7 @@ const initialState: AuthState = {
   error: null
 };
 
-export const login = createAsyncThunk('auth/login', async (credentials: { login: string; password: string}) => {
+export const login = createAsyncThunk('auth/login', async (credentials: { email: string; password: string}) => {
   const res = await fetch('/api/auth/login', {
     method: "POST",
     headers: { "Content-Type": "application/json"},
@@ -24,7 +24,7 @@ export const login = createAsyncThunk('auth/login', async (credentials: { login:
   return (await res.json()) as PublicUser;
 });
 
-export const register = createAsyncThunk('auth/register', async (data: {email: string; password: string; name: string}) => {
+export const register = createAsyncThunk('auth/register', async (data: { email: string; password: string; name: string}) => {
   const res = await fetch('api/auth/register', {
     method: "POST",
     headers: { "Content-Type": "application/json"},
