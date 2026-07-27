@@ -18,16 +18,16 @@ async function getCurrentUser(req: AuthedRequest, res: Response) {
 }
 
 async function loginHandler(req: Request, res: Response) {
-  const { email, password} = req.body;
+  const { email, password } = req.body;
 
   try {
     const result = await authService.login(email, password);
     res.json(result);
   } catch (e) {
     if (e instanceof Error && (e.message === 'Пароль неверен' || e.message === 'Данные пользователя не найдены')) {
-      return res.status(401).json({ error: 'invalid credentials'});
+      return res.status(401).json({ error: 'INVALID_CREDENTIALS'});
     }
-    return res.status(500).json({ error: 'Ошибка сервера'});
+    return res.status(500).json({ error: 'INTERNAL_ERROR'});
   }
 }
 
@@ -41,6 +41,6 @@ async function registerHandler(req: Request, res: Response) {
     if (e instanceof Error && e.message === "Почта уже используется другим пользователем") {
       return res.status(409).json({error: "Почта занята"});
     }
-    return res.status(500).json({error: "Ошибка сервера"});
+    return res.status(500).json({error: "INTERNAL_ERROR"});
   }
 }

@@ -4,6 +4,7 @@ import { WebSocketServer } from "ws";
 import dotenv from "dotenv";
 import { authRouter } from "./auth/auth.routes";
 import { projectRouter } from "./projects/project.routes";
+import { Request, Response, NextFunction } from "express";
 
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger";
@@ -19,6 +20,11 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 app.use("/auth", authRouter);
 app.use("/projects", projectRouter);
 app.use(shapeRouter)
+
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.log(err);
+  res.status(400).json({ error: "INVALID_REQUEST"});
+})
 
 const server = createServer(app);
 const wss = new WebSocketServer({ server });
