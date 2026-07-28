@@ -25,13 +25,13 @@ export const login = createAsyncThunk('auth/login', async (credentials: { email:
 });
 
 export const register = createAsyncThunk('auth/register', async (data: { email: string; password: string; name: string}) => {
-  const res = await fetch('api/auth/register', {
+  const res = await fetch('/api/auth/register', {
     method: "POST",
     headers: { "Content-Type": "application/json"},
     body: JSON.stringify(data),
   });
 
-  if (!res.ok) throw new Error("Не удалеть зарегистрировать пользователя");
+  if (!res.ok) throw new Error("Не удалось зарегистрировать пользователя");
   return (await res.json()) as PublicUser;
 });
 
