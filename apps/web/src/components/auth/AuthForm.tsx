@@ -3,23 +3,19 @@
 import { useState } from "react";
 import { LoginForm } from "./LoginForm";
 import { RegisterForm } from "./RegisterForm";
-import { AnimatePresence, motion } from "motion/react";
 
 type Mode = "reg" | "log";
 
-export default function AuthForm() {
-  const [mode, setMode] = useState<Mode>("log");
+export function AuthForm({ initialMode } : { initialMode: Mode}) {
+  const [mode, setMode] = useState<Mode>(initialMode);
 
-  return (
-    <AnimatePresence mode="wait">
-      <motion.div
-      key={mode}>
-        {mode === "log" ? (
-          <LoginForm onSwitchToRegister={() => setMode("reg")}/>
-        ) : (
-          <RegisterForm onSwitchToLogin={() => setMode("log")}/>
-        )}
-      </motion.div>
-    </AnimatePresence>
+  return mode === "log" ? (
+    <div>
+      <LoginForm onSwitchToRegister={() => setMode("reg")}/>
+    </div>
+  ) : (
+    <div>
+      <RegisterForm onSwitchToLogin={() => setMode("log")}/>
+    </div>
   );
 }
