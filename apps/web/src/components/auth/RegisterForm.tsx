@@ -12,11 +12,7 @@ type InputValues = {
   password: string;
 };
 
-export default function RegisterForm({
-  onSwitchToLogin,
-}: {
-  onSwitchToLogin: () => void;
-}) {
+export function RegisterForm({ onSwitchToLogin }: { onSwitchToLogin: () => void}) {
   const dispatch = useDispatch<AppDispatch>();
   const { status, error: serverError } = useSelector((s: RootState) => s.auth);
   const [formValues, setFormValues] = useState<InputValues>({

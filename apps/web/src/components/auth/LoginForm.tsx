@@ -11,11 +11,7 @@ type InputValues = {
   password: string;
 };
 
-export function LoginForm({
-  onSwitchToRegister,
-}: {
-  onSwitchToRegister: () => void;
-}) {
+export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => void }) {
   const dispatch = useDispatch<AppDispatch>();
   const { status, error: serverErrors } = useSelector((s: RootState) => s.auth);
   const [formValues, setFormValues] = useState<InputValues>({
@@ -45,7 +41,7 @@ export function LoginForm({
   return (
     <form id="login-form" onSubmit={handleSubmit} noValidate>
       <div>
-        <label htmlFor="login-email">
+        <label htmlFor="login-email">Почта</label>
           <input
             id="login-email"
             name="email"
@@ -54,7 +50,6 @@ export function LoginForm({
             onChange={handleChange}
             placeholder="name@email.com"
           />
-        </label>
         {fieldErrors.email && (
           <p id="email-error" role="alert">
             {fieldErrors.email}
