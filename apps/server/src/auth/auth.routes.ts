@@ -13,7 +13,7 @@ authRouter.get('/me', requireAuth, getCurrentUser);
 async function getCurrentUser(req: AuthedRequest, res: Response) {
   const user = await userRepository.getUserById(req.user!.userId);
 
-  if (!user) return res.status(404).json({ error: 'Not found'});
+  if (!user) return res.status(404).json({ error: "NOT_FOUND"});
   res.json({ id: user.id, email: user.email, name: user.name});
 }
 
@@ -24,10 +24,10 @@ async function loginHandler(req: Request, res: Response) {
     const result = await authService.login(email, password);
     res.json(result);
   } catch (e) {
-    if (e instanceof Error && (e.message === 'Пароль неверен' || e.message === 'Данные пользователя не найдены')) {
-      return res.status(401).json({ error: 'INVALID_CREDENTIALS'});
+    if (e instanceof Error && (e.message === "Пароль неверен" || e.message === "Данные пользователя не найдены")) {
+      return res.status(401).json({ error: "INVALID_CREDENTIALS"});
     }
-    return res.status(500).json({ error: 'INTERNAL_ERROR'});
+    return res.status(500).json({ error: "INTERNAL_ERROR"});
   }
 }
 
@@ -39,7 +39,7 @@ async function registerHandler(req: Request, res: Response) {
     res.status(201).json(user);
   } catch (e) {
     if (e instanceof Error && e.message === "Почта уже используется другим пользователем") {
-      return res.status(409).json({error: "Почта занята"});
+      return res.status(409).json({error: "EMAIL_TAKEN"});
     }
     return res.status(500).json({error: "INTERNAL_ERROR"});
   }

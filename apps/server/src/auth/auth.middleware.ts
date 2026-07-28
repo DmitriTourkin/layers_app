@@ -9,13 +9,13 @@ export interface AuthedRequest<P = ParamsDictionary> extends Request<P> {
 export function requireAuth(req: AuthedRequest, res: Response, next: NextFunction) {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) {
-    return res.sendStatus(401);
+    return res.status(401).json({ error: "UNAUTHORIZED" });
   }
 
   try {
     req.user = verifyToken(header.slice("Bearer ".length));
     next();
   } catch (e) {
-    res.sendStatus(401);
+    res.status(401).json({ error: "UNAUTHORIZED" });
   }
 }
