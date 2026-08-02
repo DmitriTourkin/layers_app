@@ -15,11 +15,17 @@ async function registerHandler(req: NextRequest) {
 
   if (response.ok) {
     try {
-      const data = await response.json();
+      const { token, user } = await response.json();
 
-      return NextResponse.json(data, { 
-        status: response.status,
+      const res = NextResponse.json({ user }, { status: response.status });
+      res.cookies.set("token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 60 * 60,
+        path: "/"
       });
+      return res;
 
     } catch (e) {
       console.error(e);
