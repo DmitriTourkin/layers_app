@@ -15,13 +15,15 @@ export async function POST(req: NextRequest) {
       const { token, user } = await backResponse.json();
       
       const res = NextResponse.json({ user });
-        res.cookies.set("token", token, {
+      
+      res.cookies.set("token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
         maxAge: 60 * 60,
         path: "/"
-      })
+      });
+      
       return res;
     } catch (e) {
       console.error(e);

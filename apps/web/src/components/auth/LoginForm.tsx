@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
 import { login } from "@/store/slices/authSlice";
@@ -20,14 +21,18 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
   });
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
 
-  function handleSubmit(e: React.SubmitEvent) {
+  const router = useRouter();
+
+  async function handleSubmit(e: React.SubmitEvent) {
     e.preventDefault();
 
     const errors = validate(formValues.email, formValues.password);
     setFieldErrors(errors);
 
     if (Object.keys(errors).length > 0) return;
-    dispatch(login(formValues));
+
+    await dispatch(login(formValues)).unwrap();
+    router.replace("/dashboard");
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -39,25 +44,38 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
   }
 
   return (
-    <form id="login-form" onSubmit={handleSubmit} noValidate>
-      <div>
-        <label htmlFor="login-email">Почта</label>
-          <input
-            id="login-email"
-            name="email"
-            type="email"
-            value={formValues.email}
-            onChange={handleChange}
-            placeholder="name@email.com"
-          />
+    <form
+      id="login-form"
+      onSubmit={handleSubmit}
+      noValidate
+      className="w-full max-w-sm mx-auto flex flex-col gap-5 rounded-2xl bg-gray-900 p-8 shadow-md"
+    >
+      <h1 className="text-center text-2xl font-semibold text-gray-100">Вход</h1>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="login-email" className="text-sm font-medium text-gray-300">
+          Почта
+        </label>
+        <input
+          id="login-email"
+          name="email"
+          type="email"
+          value={formValues.email}
+          onChange={handleChange}
+          placeholder="name@email.com"
+          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        />
         {fieldErrors.email && (
-          <p id="email-error" role="alert">
+          <p id="email-error" role="alert" className="text-sm text-red-400">
             {fieldErrors.email}
           </p>
         )}
       </div>
-      <div>
-        <label htmlFor="login-password"></label>
+
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="login-password" className="text-sm font-medium text-gray-300">
+          Пароль
+        </label>
         <input
           id="login-password"
           name="password"
@@ -65,22 +83,35 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
           value={formValues.password}
           onChange={handleChange}
           placeholder="Пароль"
+          className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-gray-100 placeholder-gray-500 outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
         />
         {fieldErrors.password && (
-          <p id="password-errro" role="alert">
+          <p id="password-error" role="alert" className="text-sm text-red-400">
             {fieldErrors.password}
           </p>
         )}
       </div>
+
       {serverErrors && (
-        <p id="server-errors" role="alert">
+        <p id="server-error" role="alert" className="text-center text-sm text-red-400">
           {serverErrors}
         </p>
       )}
-      <button type="submit" disabled={status === "loading"}>
+
+      <button
+        type="submit"
+        disabled={status === "loading"}
+        className="rounded-lg bg-blue-600 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
+      >
         {status === "loading" ? "Входим..." : "Войти"}
       </button>
-      <p onClick={onSwitchToRegister}>Нет аккаунта? Зарегистрироваться</p>
+
+      <p
+        onClick={onSwitchToRegister}
+        className="cursor-pointer text-center text-sm text-gray-400 hover:text-blue-400"
+      >
+        Нет аккаунта? Зарегистрироваться
+      </p>
     </form>
   );
 }
