@@ -7,16 +7,22 @@ import type { AppDispatch, RootState } from "@/store";
 import { fetchProjects, createProject } from "@/store/slices/projectsSlice";
 import { ProjectCard } from "@/components/dashboard/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/dashboard/ProjectCardSkeleton";
+import { NavigationBar } from "@/components/common/NavigationBar";
 
 export default function DashboardPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const { list, status, error } = useSelector((s: RootState) => s.projects);
+  const { user, initialized } = useSelector((s: RootState) => s.auth);
   const [name, setName] = useState("");
 
   useEffect(() => {
-    dispatch(fetchProjects());
-  }, [dispatch]);
+    if (initialized && !user) {
+      router.replace("/login");
+    } else if (user) {
+      dispatch(fetchProjects());
+    }
+  }, [dispatch, router, initialized, user]);
 
   async function handleCreate(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -31,7 +37,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 p-8 text-gray-100">
+    <div className="min-h-screen bg-gray-950 p-8 pt-24 text-gray-100">
+      <NavigationBar />
       <div className="mx-auto max-w-4xl">
         <h1 className="text-2xl font-semibold">Проекты Layers</h1>
 
