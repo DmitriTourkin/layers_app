@@ -48,7 +48,7 @@ export function RegisterForm({ onSwitchToLogin }: { onSwitchToLogin: () => void}
       id="register-form"
       onSubmit={handleSubmit}
       noValidate
-      className="w-full max-w-sm mx-auto flex flex-col gap-5 ƒnded-2xl bg-gray-900 p-8 shadow-md"
+      className="w-full max-w-sm mx-auto flex flex-col gap-5 rounded-2xl bg-gray-900 p-8 shadow-md"
     >
       <h1 className="text-center text-2xl font-semibold text-gray-100">Регистрация</h1>
 

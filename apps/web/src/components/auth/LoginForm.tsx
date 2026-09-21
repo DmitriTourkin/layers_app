@@ -31,8 +31,10 @@ export function LoginForm({ onSwitchToRegister }: { onSwitchToRegister: () => vo
 
     if (Object.keys(errors).length > 0) return;
 
-    await dispatch(login(formValues)).unwrap();
-    router.replace("/dashboard");
+    try {
+      await dispatch(login(formValues)).unwrap();
+      router.replace("/dashboard");
+    } catch {}
   }
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
