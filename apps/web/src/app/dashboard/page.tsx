@@ -31,9 +31,7 @@ export default function DashboardPage() {
     try {
       const project = await dispatch(createProject(name)).unwrap();
       router.push(`/editor/${project.id}`);
-    } catch {
-      // ошибка уже осела в state.projects.error через createProject.rejected
-    }
+    } catch {}
   }
 
   return (
@@ -64,7 +62,7 @@ export default function DashboardPage() {
         )}
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-          {status === "loading"
+          {status === "loading" && list.length === 0
             ? Array.from({ length: 4 }).map((_, i) => <ProjectCardSkeleton key={i} />)
             : list.map((project) => <ProjectCard key={project.id} project={project} />)}
         </div>
