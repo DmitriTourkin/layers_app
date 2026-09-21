@@ -29,6 +29,25 @@ export const createProject = createAsyncThunk('projects/create', async (name: st
   return (await res.json()) as Project;
 });
 
+export const renameProject = createAsyncThunk(
+  'projects/rename',
+  async ({ id, name }: { id: string; name: string }) => {
+    const res = await fetch(`/api/projects/${id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) throw new Error('Не удалось переименовать проект');
+    return (await res.json()) as Project;
+  }
+);
+
+export const deleteProject = createAsyncThunk('projects/delete', async (id: string) => {
+  const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error('Не удалось удалить проект');
+  return id;
+});
+
 function handleProjectsExtraReducers(builder: ActionReducerMapBuilder<ProjectState>) {
   builder
     .addCase(fetchProjects.pending, (state) => {
@@ -49,6 +68,19 @@ function handleProjectsExtraReducers(builder: ActionReducerMapBuilder<ProjectSta
     })
     .addCase(createProject.rejected, (state, action) => {
       state.error = action.error.message ?? 'Ошибка создания проекта';
+    })
+    .addCase(renameProject.fulfilled, (state, action) => {
+      const index = state.list.findIndex((p) => p.id === action.payload.id);
+      if (index !== -1) state.list[index] = action.payload;
+    })
+    .addCase(renameProject.rejected, (state, action) => {
+      state.error = action.error.message ?? 'Ошибка переименования проекта';
+    })
+    .addCase(deleteProject.fulfilled, (state, action) => {
+      state.list = state.list.filter((p) => p.id !== action.payload);
+    })
+    .addCase(deleteProject.rejected, (state, action) => {
+      state.error = action.error.message ?? 'Ошибка удаления проекта';
     });
 }
 
