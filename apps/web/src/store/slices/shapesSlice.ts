@@ -80,7 +80,9 @@ function handleShapesExtraReducers(builder: ActionReducerMapBuilder<ShapesState>
       state.error = action.error.message ?? 'Ошибка загрузки фигур';
     })
     .addCase(addShape.fulfilled, (state, action) => {
-      state.list.push(action.payload);
+      const index = state.list.findIndex((s) => s.id === action.payload.id);
+      if (index !== -1) state.list[index] = action.payload;
+      else state.list.push(action.payload);
     })
     .addCase(updateShape.fulfilled, (state, action) => {
       const index = state.list.findIndex((s) => s.id === action.payload.id);

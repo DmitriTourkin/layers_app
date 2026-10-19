@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { Canvas as FabricCanvas, Rect, Ellipse, IText, type FabricObject } from "fabric";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
-import { addShape, updateShape, setSelectedShapeId, shapeUpserted, shapeRemoved } from "@/store/slices/shapesSlice";
+import { addShape, updateShape, fetchShapes, setSelectedShapeId, shapeUpserted, shapeRemoved } from "@/store/slices/shapesSlice";
 import { setPresence, clearPresence } from "@/store/slices/presenceSlice";
 import type { Shape, ShapeType } from "shared";
 import type { Tool } from "./Toolbar";
@@ -25,6 +25,36 @@ function createFabricObject(shape: Shape): FabricObject {
     return new Ellipse({ ...common, rx: shape.width / 2, ry: shape.height / 2 });
   }
   return new IText("Текст", { left: shape.x, top: shape.y, fill: shape.fill });
+}
+
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL ?? "ws://localhost:4000";
+
+const EPSILON = 0.01;
+
+function differs(a: number | undefined, b: number): boolean {
+  return Math.abs((a ?? 0) - b) > EPSILON;
+}
+
+function isOutOfSync(obj: FabricObject, shape: Shape): boolean {
+  if (
+    differs(obj.left, shape.x) ||
+    differs(obj.top, shape.y) ||
+    differs(obj.angle, shape.rotation) ||
+    obj.fill !== shape.fill
+  ) {
+    return true;
+  }
+  if (shape.type === "text") return false;
+  return differs(obj.getScaledWidth(), shape.width) || differs(obj.getScaledHeight(), shape.height);
+}
+
+function applyShape(obj: FabricObject, shape: Shape) {
+  obj.set({ left: shape.x, top: shape.y, angle: shape.rotation, fill: shape.fill });
+  if (shape.type !== "text") {
+    obj.set({ width: shape.width, height: shape.height, scaleX: 1, scaleY: 1 });
+    if (obj instanceof Ellipse) obj.set({ rx: shape.width / 2, ry: shape.height / 2 });
+  }
+  obj.setCoords();
 }
 
 export function EditorCanvas({ projectId, activeTool }: { projectId: string; activeTool: Tool }) {
@@ -112,8 +142,8 @@ export function EditorCanvas({ projectId, activeTool }: { projectId: string; act
         const obj = createFabricObject(shape);
         objectsRef.current.set(shape.id, obj);
         canvas.add(obj);
-      } else if (existing.fill !== shape.fill) {
-        existing.set({ fill: shape.fill });
+      } else if (isOutOfSync(existing, shape)) {
+        applyShape(existing, shape);
       }
     }
 
@@ -124,9 +154,15 @@ export function EditorCanvas({ projectId, activeTool }: { projectId: string; act
     let ws: WebSocket;
     let reconnectTimer: ReturnType<typeof setTimeout>;
     let unmounted = false;
+    let hasConnectedBefore = false;
 
     function connect() {
-      ws = new WebSocket(`ws://localhost:4000?projectId=${projectId}`);
+      ws = new WebSocket(`${WS_URL}?projectId=${projectId}`);
+
+      ws.onopen = () => {
+        if (hasConnectedBefore) dispatch(fetchShapes(projectId));
+        hasConnectedBefore = true;
+      };
 
       ws.onmessage = (event) => {
         const data = parseWsEvent(event.data);
