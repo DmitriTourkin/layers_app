@@ -1,13 +1,25 @@
 import type { Shape } from "./shape";
 
-export interface ShapeCreatedEvent {
-  type: "shape:created";
-  payload: Shape;
+export interface PresenceUser {
+  id: string;
+  name: string;
 }
 
-export interface ShapeMovedEvent {
-  type: "shape:moved";
-  payload: { id: string; x: number; y: number };
+export interface PresenceEvent {
+  type: "presence";
+  users: PresenceUser[];
 }
 
-export type WsEvent = ShapeCreatedEvent | ShapeMovedEvent;
+export interface ShapeUpsertEvent {
+  type: "shape:upsert";
+  shape: Shape;
+}
+
+export interface ShapeRemoveEvent {
+  type: "shape:remove";
+  id: string;
+}
+
+export type ShapeEvent = ShapeUpsertEvent | ShapeRemoveEvent;
+
+export type WsEvent = PresenceEvent | ShapeEvent;

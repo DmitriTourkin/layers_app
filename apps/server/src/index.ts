@@ -1,6 +1,5 @@
 import express from "express";
 import { createServer } from "http";
-import { WebSocketServer } from "ws";
 import dotenv from "dotenv";
 import { authRouter } from "./auth/auth.routes";
 import { projectRouter } from "./projects/project.routes";
@@ -9,6 +8,7 @@ import { Request, Response, NextFunction } from "express";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./swagger";
 import { shapeRouter } from "./shapes/shape.routes";
+import { setupWebSocket } from "./ws";
 
 dotenv.config();
 
@@ -27,13 +27,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 })
 
 const server = createServer(app);
-const wss = new WebSocketServer({ server });
-
-wss.on("connection", (ws) => {
-  ws.on("message", (data) => {
-    console.log("received:", data.toString());
-  });
-});
+setupWebSocket(server);
 
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => console.log(`server on :${PORT}`));
