@@ -2,7 +2,7 @@ import { WebSocketServer, WebSocket } from "ws";
 import { Redis } from "ioredis";
 import type { Server } from "http";
 import { verifyToken } from "./auth/auth.service";
-import { assertProjectOwner } from "./projects/project.service";
+import { assertProjectAccess } from "./projects/project.service";
 import * as userRepository from "./auth/user.repository";
 import type { PresenceEvent, PresenceUser, ShapeEvent } from "shared";
 
@@ -98,7 +98,7 @@ export function setupWebSocket(server: Server) {
     let userId: string;
     try {
       ({ userId } = verifyToken(token));
-      await assertProjectOwner(projectId, userId);
+      await assertProjectAccess(projectId, userId);
     } catch {
       ws.close();
       return;
