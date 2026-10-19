@@ -1,4 +1,5 @@
 import { WebSocketServer, WebSocket } from "ws";
+import { Redis } from "ioredis";
 import type { Server } from "http";
 import { verifyToken } from "./auth/auth.service";
 import { assertProjectOwner } from "./projects/project.service";
@@ -9,7 +10,10 @@ interface TrackedSocket extends WebSocket {
   isAlive?: boolean;
 }
 
+const SHAPE_EVENTS_CHANNEL = "shape-events";
+
 const rooms = new Map<string, Map<WebSocket, PresenceUser>>();
+let publisher: Redis | null = null;
 
 function parseCookie(header: string | undefined, name: string): string | null {
   if (!header) return null;
@@ -33,7 +37,7 @@ function broadcastPresence(projectId: string) {
   }
 }
 
-export function broadcastShapeEvent(projectId: string, event: ShapeEvent) {
+function deliverToRoom(projectId: string, event: ShapeEvent) {
   const room = rooms.get(projectId);
   if (!room) return;
 
@@ -43,8 +47,34 @@ export function broadcastShapeEvent(projectId: string, event: ShapeEvent) {
   }
 }
 
+export function broadcastShapeEvent(projectId: string, event: ShapeEvent) {
+  if (!publisher) {
+    deliverToRoom(projectId, event);
+    return;
+  }
+
+  publisher
+    .publish(SHAPE_EVENTS_CHANNEL, JSON.stringify({ projectId, event }))
+    .catch(() => deliverToRoom(projectId, event));
+}
+
 export function setupWebSocket(server: Server) {
   const wss = new WebSocketServer({ server });
+
+  const redisUrl = process.env.REDIS_URL ?? "redis://localhost:6379";
+  publisher = new Redis(redisUrl, { enableOfflineQueue: false });
+  const subscriber = new Redis(redisUrl);
+
+  publisher.on("error", (err) => console.error("redis publisher:", err.message));
+  subscriber.on("error", (err) => console.error("redis subscriber:", err.message));
+
+  subscriber.subscribe(SHAPE_EVENTS_CHANNEL);
+  subscriber.on("message", (_channel, raw) => {
+    try {
+      const { projectId, event } = JSON.parse(raw) as { projectId: string; event: ShapeEvent };
+      deliverToRoom(projectId, event);
+    } catch {}
+  });
 
   wss.on("connection", async (ws: TrackedSocket, req) => {
     const url = new URL(req.url ?? "", "http://localhost");
@@ -104,5 +134,10 @@ export function setupWebSocket(server: Server) {
     });
   }, 30000);
 
-  wss.on("close", () => clearInterval(interval));
+  wss.on("close", () => {
+    clearInterval(interval);
+    publisher?.disconnect();
+    subscriber.disconnect();
+    publisher = null;
+  });
 }
