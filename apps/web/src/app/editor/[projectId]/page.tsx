@@ -10,6 +10,7 @@ import { EditorCanvas } from "@/components/editor/Canvas";
 import { LayersPanel } from "@/components/editor/LayersPanel";
 import { PropertiesPanel } from "@/components/editor/PropertiesPanel";
 import { PresenceBar } from "@/components/editor/PresenceBar";
+import { ShareButton } from "@/components/editor/ShareButton";
 import { NavigationBar } from "@/components/common/NavigationBar";
 
 export default function EditorPage() {
@@ -39,6 +40,7 @@ export default function EditorPage() {
       <div className="mb-4 flex items-center justify-center gap-4">
         <Toolbar activeTool={activeTool} onSelectTool={setActiveTool} />
         <PresenceBar />
+        <ShareButton projectId={projectId} />
       </div>
 
       <div className="flex justify-center gap-4">

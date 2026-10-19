@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDispatch } from "react-redux";
-import type { AppDispatch } from "@/store";
+import { useDispatch, useSelector } from "react-redux";
+import type { AppDispatch, RootState } from "@/store";
 import { renameProject, deleteProject } from "@/store/slices/projectsSlice";
 import { ConfirmModal } from "@/components/common/ConfirmModal";
 import type { Project } from "shared";
@@ -11,6 +11,8 @@ import type { Project } from "shared";
 export function ProjectCard({ project }: { project: Project }) {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((s: RootState) => s.auth.user?.id);
+  const isOwner = userId === project.ownerId;
   const [isEditing, setIsEditing] = useState(false);
   const [draftName, setDraftName] = useState(project.name);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -35,6 +37,7 @@ export function ProjectCard({ project }: { project: Project }) {
 
   function handleContextMenu(e: React.MouseEvent) {
     e.preventDefault();
+    if (!isOwner) return;
     setMenuPosition({ x: e.clientX, y: e.clientY });
   }
 
@@ -79,6 +82,7 @@ export function ProjectCard({ project }: { project: Project }) {
 
         <p className="mt-1 text-sm text-gray-400">
           {new Date(project.createdAt).toLocaleDateString("ru-RU")}
+          {!isOwner && " · Совместный"}
         </p>
       </div>
 
