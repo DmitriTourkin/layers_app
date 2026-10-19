@@ -4,9 +4,11 @@ import { useEffect, useRef } from "react";
 import { Canvas as FabricCanvas, Rect, Ellipse, IText, type FabricObject } from "fabric";
 import { useDispatch, useSelector } from "react-redux";
 import type { AppDispatch, RootState } from "@/store";
-import { addShape, updateShape, setSelectedShapeId } from "@/store/slices/shapesSlice";
+import { addShape, updateShape, setSelectedShapeId, shapeUpserted, shapeRemoved } from "@/store/slices/shapesSlice";
+import { setPresence, clearPresence } from "@/store/slices/presenceSlice";
 import type { Shape, ShapeType } from "shared";
 import type { Tool } from "./Toolbar";
+import { parseWsEvent } from "@/utils/wsEvents";
 
 function createFabricObject(shape: Shape): FabricObject {
   const common = {
@@ -33,8 +35,6 @@ export function EditorCanvas({ projectId, activeTool }: { projectId: string; act
   const fabricCanvasRef = useRef<FabricCanvas | null>(null);
   const objectsRef = useRef<Map<string, FabricObject>>(new Map());
 
-  // activeTool читается внутри обработчика, который навешан один раз при маунте —
-  // без ref он бы всегда видел значение на момент создания канваса (stale closure)
   const activeToolRef = useRef(activeTool);
   activeToolRef.current = activeTool;
 
@@ -89,10 +89,10 @@ export function EditorCanvas({ projectId, activeTool }: { projectId: string; act
     return () => {
       canvas.dispose();
       fabricCanvasRef.current = null;
+      objectsRef.current.clear();
     };
   }, [dispatch, projectId]);
 
-  // Redux list -> канвас: добавить новые, убрать удалённые, применить внешние изменения (цвет)
   useEffect(() => {
     const canvas = fabricCanvasRef.current;
     if (!canvas) return;
@@ -119,6 +119,47 @@ export function EditorCanvas({ projectId, activeTool }: { projectId: string; act
 
     canvas.renderAll();
   }, [list]);
+
+  useEffect(() => {
+    let ws: WebSocket;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
+    let unmounted = false;
+
+    function connect() {
+      ws = new WebSocket(`ws://localhost:4000?projectId=${projectId}`);
+
+      ws.onmessage = (event) => {
+        const data = parseWsEvent(event.data);
+        if (!data) return;
+
+        switch (data.type) {
+          case "presence":
+            dispatch(setPresence(data.users));
+            break;
+          case "shape:upsert":
+            dispatch(shapeUpserted(data.shape));
+            break;
+          case "shape:remove":
+            dispatch(shapeRemoved(data.id));
+            break;
+        }
+      };
+
+      ws.onclose = () => {
+        if (unmounted) return;
+        reconnectTimer = setTimeout(connect, 1000);
+      };
+    }
+
+    connect();
+
+    return () => {
+      unmounted = true;
+      clearTimeout(reconnectTimer);
+      ws.close();
+      dispatch(clearPresence());
+    };
+  }, [dispatch, projectId]);
 
   return <canvas ref={canvasElRef} className="rounded-2xl shadow-md" />;
 }
