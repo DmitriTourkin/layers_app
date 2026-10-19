@@ -21,11 +21,13 @@ export async function editShape(shapeId: string, userId: string, input: Partial<
   return shapeRepository.updateShape(shapeId, input);
 }
 
-export async function removeShape(shapeId: string, userId: string): Promise<void> {
+export async function removeShape(shapeId: string, userId: string): Promise<string> {
   const shape = await shapeRepository.getShapeById(shapeId);
 
   if (!shape) throw new Error('NOT_FOUND');
 
   await assertProjectOwner(shape.projectId, userId);
   await shapeRepository.deleteShape(shapeId);
+
+  return shape.projectId;
 }

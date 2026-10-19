@@ -1,6 +1,7 @@
 import { Router, Response } from 'express';
 import * as shapeService from './shape.service';
 import { requireAuth, AuthedRequest } from '../auth/auth.middleware';
+import { broadcastShapeEvent } from '../ws';
 
 export const shapeRouter = Router();
 
@@ -27,6 +28,7 @@ async function addShapeHandler(req: AuthedRequest<{ projectId: string }>, res: R
 
     const shape = await shapeService.addShape(projectId, userId, input)
     res.status(201).json(shape);
+    broadcastShapeEvent(projectId, { type: 'shape:upsert', shape });
   } catch (e) {
     handleServiceError(e, res);
   }
@@ -45,6 +47,7 @@ async function editShapeHandler(req: AuthedRequest<{ id: string }>, res: Respons
   try {
     const shape = await shapeService.editShape(req.params.id, req.user!.userId, req.body);
     res.json(shape);
+    broadcastShapeEvent(shape.projectId, { type: 'shape:upsert', shape });
   } catch (e) {
     handleServiceError(e, res);
   }
@@ -52,8 +55,9 @@ async function editShapeHandler(req: AuthedRequest<{ id: string }>, res: Respons
 
 async function removeShapeHandler(req: AuthedRequest<{ id: string }>, res: Response) {
   try {
-    await shapeService.removeShape(req.params.id, req.user!.userId);
+    const projectId = await shapeService.removeShape(req.params.id, req.user!.userId);
     res.status(204).send();
+    broadcastShapeEvent(projectId, { type: 'shape:remove', id: req.params.id });
   } catch (e) {
     handleServiceError(e, res);
   }
